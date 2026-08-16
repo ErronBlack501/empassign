@@ -4,6 +4,21 @@
              xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_2.xsd"
              version="3.2">
   <persistence-unit name="default">
+    <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+    <class>com.example.empassign.model.Employee</class>
+    <class>com.example.empassign.model.Lieu</class>
+    <class>com.example.empassign.model.Affectation</class>
 
+    <properties>
+      <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
+      <property name="jakarta.persistence.jdbc.url" value="jdbc:mysql://localhost:3307/empassign?useSSL=false&amp;allowPublicKeyRetrieval=true&amp;serverTimezone=UTC"/>
+      <property name="jakarta.persistence.jdbc.user" value="empassign"/>
+      <property name="jakarta.persistence.jdbc.password" value="empassign"/>
+      <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
+      <property name="hibernate.hbm2ddl.auto" value="update"/>
+      <property name="hibernate.show_sql" value="false"/>
+      <property name="hibernate.format_sql" value="false"/>
+      <property name="hibernate.generate_statistics" value="false"/>
+    </properties>
   </persistence-unit>
 </persistence>
