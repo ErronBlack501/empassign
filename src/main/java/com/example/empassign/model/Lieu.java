@@ -10,6 +10,7 @@ import java.util.List;
 public class Lieu {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "codelieu")
     private Integer codelieu;
 

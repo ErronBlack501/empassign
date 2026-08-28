@@ -10,6 +10,7 @@ import java.util.List;
 public class Employee {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "codeemp")
     private Integer codeemp;
 
