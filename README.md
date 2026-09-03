@@ -1,11 +1,11 @@
 # Projet 5 - Gestion des affectations des employés
 
-## Java 21
+## Java 25
 
-Le projet se compile avec JDK 21. Avant d'utiliser Maven depuis PowerShell, vérifiez que `JAVA_HOME` pointe vers votre installation JDK 21 :
+Le projet se compile avec JDK 25 LTS. Avant d'utiliser Maven depuis PowerShell, vérifiez que `JAVA_HOME` pointe vers votre installation JDK 25 :
 
 ```powershell
-$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot"
+$env:JAVA_HOME = "C:\Users\erb\.jdks\jdk-25.0.2"
 $env:Path = "$env:JAVA_HOME\bin;" + $env:Path
 java -version
 ```

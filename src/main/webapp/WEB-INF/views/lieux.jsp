@@ -19,23 +19,28 @@
       </nav>
     </div>
 
-    <h2>Ajouter un lieu</h2>
+    <h2><c:if test="${'edit' eq action}">Modifier un lieu</c:if><c:if test="${'read' eq action}">Détails du lieu</c:if><c:if test="${'edit' ne action and 'read' ne action}">Ajouter un lieu</c:if></h2>
     <form method="post" action="lieux">
+      <input type="hidden" name="formAction" value="${'edit' eq action ? 'update' : 'add'}">
+      <c:if test="${'edit' eq action and selectedLieu != null}">
+        <input type="hidden" name="codelieu" value="${selectedLieu.codelieu}">
+      </c:if>
       <div class="form-grid">
         <div>
-          <label>Code</label>
-          <input type="number" name="codelieu" required>
-        </div>
-        <div>
           <label>Désignation</label>
-          <input type="text" name="designation" required>
+          <input type="text" name="designation" value="${selectedLieu.designation}" ${'read' eq action ? 'disabled="disabled"' : ''} required>
         </div>
         <div>
           <label>Province</label>
-          <input type="text" name="province">
+          <input type="text" name="province" value="${selectedLieu.province}" ${'read' eq action ? 'disabled="disabled"' : ''}>
         </div>
       </div>
-      <button type="submit">Ajouter</button>
+      <div class="form-actions">
+        <button type="submit" ${'read' eq action ? 'disabled="disabled"' : ''}><c:if test="${'edit' eq action}">Modifier</c:if><c:if test="${'edit' ne action}">Ajouter</c:if></button>
+        <c:if test="${'read' eq action or 'edit' eq action}">
+          <a href="lieux" class="btn-cancel">Annuler</a>
+        </c:if>
+      </div>
     </form>
   </div>
 
@@ -57,7 +62,11 @@
               <td>${lieu.codelieu}</td>
               <td>${lieu.designation}</td>
               <td>${lieu.province}</td>
-              <td><a href="lieux?action=delete&code=${lieu.codelieu}" class="action-link">Supprimer</a></td>
+              <td class="action-buttons">
+                <a href="lieux?action=read&code=${lieu.codelieu}" class="btn-read" title="Voir">👁️</a>
+                <a href="lieux?action=edit&code=${lieu.codelieu}" class="btn-edit" title="Modifier">✏️</a>
+                <a href="lieux?action=delete&code=${lieu.codelieu}" class="btn-remove" title="Supprimer" onclick="return confirm('Êtes-vous sûr?')">🗑️</a>
+              </td>
             </tr>
           </c:forEach>
         </tbody>

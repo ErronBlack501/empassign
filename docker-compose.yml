@@ -13,16 +13,16 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
 
-  jenkins:
-    image: jenkins/jenkins:2.579
-    container_name: empassign-jenkins
+  tomcat:
+    image: tomcat:jre21-temurin-noble
+    container_name: empassign-tomcat
     restart: unless-stopped
+    depends_on:
+      - mysql
     ports:
-      - "8081:8080"
-      - "50000:50000"
+      - "8080:8080"
     volumes:
-      - jenkins_home:/var/jenkins_home
+      - ./target/empassign-1.0-SNAPSHOT.war:/usr/local/tomcat/webapps/empassign.war:ro
 
 volumes:
   mysql_data:
-  jenkins_home:

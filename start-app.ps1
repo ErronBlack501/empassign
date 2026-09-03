@@ -26,10 +26,14 @@ if (-not $TomcatPath) {
 
 $tomcatBin = Join-Path $TomcatPath "bin"
 $startupScript = Join-Path $tomcatBin "startup.bat"
+$shutdownScript = Join-Path $tomcatBin "shutdown.bat"
 $webappsPath = Join-Path $TomcatPath "webapps"
 
-if (-not (Test-Path $startupScript) -or -not (Test-Path $webappsPath)) {
-    throw "Installation Tomcat invalide: startup.bat ou webapps est introuvable dans $TomcatPath"
+$env:CATALINA_HOME = $TomcatPath
+$env:CATALINA_BASE = $TomcatPath
+
+if (-not (Test-Path $startupScript) -or -not (Test-Path $shutdownScript) -or -not (Test-Path $webappsPath)) {
+    throw "Installation Tomcat invalide: startup.bat, shutdown.bat ou webapps est introuvable dans $TomcatPath"
 }
 
 Write-Host "Demarrage de MySQL..." -ForegroundColor Cyan
@@ -40,6 +44,9 @@ if (-not $SkipBuild) {
         throw "mvnw.cmd introuvable dans $projectRoot"
     }
 
+    # Configure JAVA_HOME for Java 21
+    $env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot"
+    
     Write-Host "Compilation du projet..." -ForegroundColor Cyan
     Push-Location $projectRoot
     try {
@@ -63,6 +70,22 @@ if (-not $warFile) {
 
 $deploymentName = [IO.Path]::GetFileNameWithoutExtension($warFile.Name)
 $destination = Join-Path $webappsPath $warFile.Name
+
+Write-Host "Arret propre de Tomcat avant le deploiement..." -ForegroundColor Yellow
+if (Test-Path $shutdownScript) {
+    try {
+        & $shutdownScript
+    }
+    catch {
+        Write-Host "Shutdown Tomcat ignore: $($_.Exception.Message)" -ForegroundColor DarkYellow
+    }
+}
+
+Start-Sleep -Seconds 3
+
+Write-Host "Nettoyage des deploiements Tomcat existants pour $deploymentName..." -ForegroundColor Yellow
+Get-ChildItem $webappsPath -Filter "empassign*" -Force -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+
 Copy-Item $warFile.FullName $destination -Force
 
 Write-Host "WAR deploye dans $destination" -ForegroundColor Green

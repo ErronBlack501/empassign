@@ -19,6 +19,8 @@ public class LieuServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String action = request.getParameter("action");
+        Lieu selectedLieu = null;
+
         if ("delete".equals(action)) {
             String code = request.getParameter("code");
             if (code != null && !code.isEmpty()) {
@@ -27,23 +29,36 @@ public class LieuServlet extends HttpServlet {
                     lieuDao.delete(lieu);
                 }
             }
+        } else if ("read".equals(action) || "edit".equals(action)) {
+            String code = request.getParameter("code");
+            if (code != null && !code.isEmpty()) {
+                selectedLieu = lieuDao.findById(Integer.valueOf(code));
+            }
         }
 
         List<Lieu> lieux = lieuDao.findAll();
         request.setAttribute("lieux", lieux);
+        request.setAttribute("selectedLieu", selectedLieu);
+        request.setAttribute("action", action);
         request.getRequestDispatcher("/WEB-INF/views/lieux.jsp").forward(request, response);
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        String action = request.getParameter("formAction");
         String code = request.getParameter("codelieu");
         String designation = request.getParameter("designation");
         String province = request.getParameter("province");
 
-        if (code != null && !code.isEmpty()) {
-            Lieu lieu = new Lieu(Integer.valueOf(code), designation, province);
-            lieuDao.save(lieu);
+        if (designation != null && !designation.trim().isEmpty()) {
+            if ("update".equals(action) && code != null && !code.isEmpty()) {
+                Lieu lieu = new Lieu(Integer.valueOf(code), designation, province);
+                lieuDao.update(lieu);
+            } else {
+                Lieu lieu = new Lieu(null, designation, province);
+                lieuDao.save(lieu);
+            }
         }
 
         response.sendRedirect("lieux");

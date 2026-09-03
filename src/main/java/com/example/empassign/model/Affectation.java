@@ -12,12 +12,12 @@ public class Affectation {
     private AffectationId id;
 
     @MapsId("codeemp")
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "codeemp", nullable = false)
     private Employee employee;
 
     @MapsId("codelieu")
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "codelieu", nullable = false)
     private Lieu lieu;
 

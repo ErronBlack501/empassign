@@ -3,6 +3,8 @@ package com.example.empassign;
 import com.example.empassign.model.Affectation;
 import com.example.empassign.model.Employee;
 import com.example.empassign.model.Lieu;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ManyToOne;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -33,6 +35,19 @@ public class Project5StructureTest {
                 "The persistence configuration should declare a Hibernate dialect");
         assertTrue(xml.contains("jakarta.persistence.jdbc.url"),
                 "The persistence configuration should include JDBC URL");
+    }
+
+    @Test
+    public void affectation_associations_should_be_eager_loaded() throws NoSuchFieldException {
+        ManyToOne employeeAssociation = Affectation.class.getDeclaredField("employee").getAnnotation(ManyToOne.class);
+        ManyToOne lieuAssociation = Affectation.class.getDeclaredField("lieu").getAnnotation(ManyToOne.class);
+
+        assertNotNull(employeeAssociation, "employee association should be mapped");
+        assertNotNull(lieuAssociation, "lieu association should be mapped");
+        assertTrue(employeeAssociation.fetch() == FetchType.EAGER,
+                "employee relationship should be eager to avoid lazy-init errors in JSP");
+        assertTrue(lieuAssociation.fetch() == FetchType.EAGER,
+                "lieu relationship should be eager to avoid lazy-init errors in JSP");
     }
 
     private String readFully(InputStream inputStream) throws IOException {

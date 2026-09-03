@@ -24,7 +24,8 @@ public class AffectationDao {
     public List<Affectation> findAll() {
         EntityManager em = HibernateUtil.getEntityManager();
         try {
-            TypedQuery<Affectation> query = em.createQuery("SELECT a FROM Affectation a ORDER BY a.date",
+            TypedQuery<Affectation> query = em.createQuery(
+                    "SELECT DISTINCT a FROM Affectation a JOIN FETCH a.employee e JOIN FETCH a.lieu l ORDER BY a.date",
                     Affectation.class);
             return query.getResultList();
         } finally {
@@ -35,7 +36,11 @@ public class AffectationDao {
     public Affectation findById(AffectationId id) {
         EntityManager em = HibernateUtil.getEntityManager();
         try {
-            return em.find(Affectation.class, id);
+            TypedQuery<Affectation> query = em.createQuery(
+                    "SELECT a FROM Affectation a JOIN FETCH a.employee e JOIN FETCH a.lieu l WHERE a.id = :id",
+                    Affectation.class);
+            query.setParameter("id", id);
+            return query.getResultList().stream().findFirst().orElse(null);
         } finally {
             em.close();
         }

@@ -27,6 +27,8 @@ public class AffectationServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String action = request.getParameter("action");
+        Affectation selectedAffectation = null;
+
         if ("delete".equals(action)) {
             String codeemp = request.getParameter("codeemp");
             String codelieu = request.getParameter("codelieu");
@@ -37,18 +39,28 @@ public class AffectationServlet extends HttpServlet {
                     affectationDao.delete(affectation);
                 }
             }
+        } else if ("read".equals(action) || "edit".equals(action)) {
+            String codeemp = request.getParameter("codeemp");
+            String codelieu = request.getParameter("codelieu");
+            if (codeemp != null && codelieu != null && !codeemp.isEmpty() && !codelieu.isEmpty()) {
+                selectedAffectation = affectationDao
+                        .findById(new AffectationId(Integer.valueOf(codeemp), Integer.valueOf(codelieu)));
+            }
         }
 
         List<Affectation> affectations = affectationDao.findAll();
         request.setAttribute("affectations", affectations);
         request.setAttribute("employees", employeeDao.findAll());
         request.setAttribute("lieux", lieuDao.findAll());
+        request.setAttribute("selectedAffectation", selectedAffectation);
+        request.setAttribute("action", action);
         request.getRequestDispatcher("/WEB-INF/views/affectations.jsp").forward(request, response);
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        String action = request.getParameter("formAction");
         String codeemp = request.getParameter("codeemp");
         String codelieu = request.getParameter("codelieu");
         String date = request.getParameter("date");
@@ -59,7 +71,11 @@ public class AffectationServlet extends HttpServlet {
             Lieu lieu = lieuDao.findById(Integer.valueOf(codelieu));
             if (employee != null && lieu != null) {
                 Affectation affectation = new Affectation(employee, lieu, LocalDate.parse(date));
-                affectationDao.save(affectation);
+                if ("update".equals(action)) {
+                    affectationDao.update(affectation);
+                } else {
+                    affectationDao.save(affectation);
+                }
             }
         }
 

@@ -19,6 +19,8 @@ public class EmployeeServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String action = request.getParameter("action");
+        Employee selectedEmployee = null;
+
         if ("delete".equals(action)) {
             String code = request.getParameter("code");
             if (code != null && !code.isEmpty()) {
@@ -26,6 +28,11 @@ public class EmployeeServlet extends HttpServlet {
                 if (employee != null) {
                     employeeDao.delete(employee);
                 }
+            }
+        } else if ("read".equals(action) || "edit".equals(action)) {
+            String code = request.getParameter("code");
+            if (code != null && !code.isEmpty()) {
+                selectedEmployee = employeeDao.findById(Integer.valueOf(code));
             }
         }
 
@@ -39,20 +46,28 @@ public class EmployeeServlet extends HttpServlet {
 
         request.setAttribute("employees", employees);
         request.setAttribute("keyword", keyword == null ? "" : keyword);
+        request.setAttribute("selectedEmployee", selectedEmployee);
+        request.setAttribute("action", action);
         request.getRequestDispatcher("/WEB-INF/views/employees.jsp").forward(request, response);
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        String action = request.getParameter("formAction");
         String code = request.getParameter("codeemp");
         String nom = request.getParameter("nom");
         String prenom = request.getParameter("prenom");
         String poste = request.getParameter("poste");
 
-        if (code != null && !code.isEmpty()) {
-            Employee employee = new Employee(Integer.valueOf(code), nom, prenom, poste);
-            employeeDao.save(employee);
+        if (nom != null && !nom.trim().isEmpty()) {
+            if ("update".equals(action) && code != null && !code.isEmpty()) {
+                Employee employee = new Employee(Integer.valueOf(code), nom, prenom, poste);
+                employeeDao.update(employee);
+            } else {
+                Employee employee = new Employee(null, nom, prenom, poste);
+                employeeDao.save(employee);
+            }
         }
 
         response.sendRedirect("employees");

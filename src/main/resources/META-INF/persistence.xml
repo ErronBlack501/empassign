@@ -11,7 +11,7 @@
 
     <properties>
       <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
-      <property name="jakarta.persistence.jdbc.url" value="jdbc:mysql://localhost:3307/empassign?useSSL=false&amp;allowPublicKeyRetrieval=true&amp;serverTimezone=UTC"/>
+      <property name="jakarta.persistence.jdbc.url" value="jdbc:mysql://mysql:3306/empassign?useSSL=false&amp;allowPublicKeyRetrieval=true&amp;serverTimezone=UTC"/>
       <property name="jakarta.persistence.jdbc.user" value="empassign"/>
       <property name="jakarta.persistence.jdbc.password" value="empassign"/>
       <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
@@ -20,6 +20,8 @@
       <property name="hibernate.hikari.maximumPoolSize" value="10"/>
       <property name="hibernate.hikari.connectionTimeout" value="30000"/>
       <property name="hibernate.hbm2ddl.auto" value="update"/>
+      <property name="hibernate.transaction.jta.platform" value="org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform"/>
+      <property name="jakarta.persistence.transactionType" value="RESOURCE_LOCAL"/>
       <property name="hibernate.show_sql" value="false"/>
       <property name="hibernate.format_sql" value="false"/>
       <property name="hibernate.generate_statistics" value="false"/>
