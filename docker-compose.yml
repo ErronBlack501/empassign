@@ -12,13 +12,24 @@ services:
       - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uempassign -pempassign"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
   tomcat:
     image: tomcat:jre21-temurin-noble
     container_name: empassign-tomcat
     restart: unless-stopped
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: empassign
+      DB_PASSWORD: empassign
     ports:
       - "8080:8080"
     volumes:

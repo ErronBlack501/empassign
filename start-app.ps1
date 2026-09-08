@@ -8,7 +8,7 @@ $projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $composeFile = Join-Path $projectRoot "docker-compose.yml"
 $mavenWrapper = Join-Path $projectRoot "mvnw.cmd"
 
-function Require-Command([string]$Name) {
+function Test-Command([string]$Name) {
     if (-not (Get-Command $Name -ErrorAction SilentlyContinue)) {
         throw "Commande introuvable: $Name"
     }
@@ -18,7 +18,12 @@ if (-not (Test-Path $composeFile)) {
     throw "Fichier docker-compose.yml introuvable dans $projectRoot"
 }
 
-Require-Command "docker"
+Test-Command "docker"
+Test-Command "java"
+
+if (-not $env:JAVA_HOME -or -not (Test-Path (Join-Path $env:JAVA_HOME "bin\java.exe"))) {
+    throw "JAVA_HOME doit pointer vers un JDK valide (Java 21 recommande)."
+}
 
 if (-not $TomcatPath) {
     throw "Chemin Tomcat manquant. Utilisez -TomcatPath 'C:\chemin\vers\apache-tomcat-11' ou definissez TOMCAT_HOME."
@@ -37,16 +42,17 @@ if (-not (Test-Path $startupScript) -or -not (Test-Path $shutdownScript) -or -no
 }
 
 Write-Host "Demarrage de MySQL..." -ForegroundColor Cyan
-docker compose -f $composeFile up -d
+docker compose -f $composeFile up -d mysql
+$env:DB_HOST = "127.0.0.1"
+$env:DB_PORT = "3307"
+$env:DB_USER = "empassign"
+$env:DB_PASSWORD = "empassign"
 
 if (-not $SkipBuild) {
     if (-not (Test-Path $mavenWrapper)) {
         throw "mvnw.cmd introuvable dans $projectRoot"
     }
 
-    # Configure JAVA_HOME for Java 21
-    $env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot"
-    
     Write-Host "Compilation du projet..." -ForegroundColor Cyan
     Push-Location $projectRoot
     try {

@@ -1,11 +1,11 @@
 # Projet 5 - Gestion des affectations des employés
 
-## Java 25
+## Java 21
 
-Le projet se compile avec JDK 25 LTS. Avant d'utiliser Maven depuis PowerShell, vérifiez que `JAVA_HOME` pointe vers votre installation JDK 25 :
+Le projet cible Java 21. Avant d'utiliser Maven depuis PowerShell, vérifiez que `JAVA_HOME` pointe vers votre installation JDK 21 :
 
 ```powershell
-$env:JAVA_HOME = "C:\Users\erb\.jdks\jdk-25.0.2"
+$env:JAVA_HOME = "C:\chemin\vers\jdk-21"
 $env:Path = "$env:JAVA_HOME\bin;" + $env:Path
 java -version
 ```
@@ -29,6 +29,8 @@ Connexion JDBC utilisée par l'application :
 ```text
 jdbc:mysql://localhost:3307/empassign?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
 ```
+
+Dans Docker, l'application utilise automatiquement `mysql:3306`. En local avec Tomcat, elle utilise `localhost:3307`.
 
 Identifiants MySQL du conteneur :
 
@@ -59,3 +61,7 @@ Pour arrêter le conteneur :
 ```bash
 docker-compose down
 ```
+
+## Pipeline Jenkins
+
+Le pipeline Jenkins est défini dans `Jenkinsfile`. Il exécute les tests Maven, archive le WAR, démarre MySQL/Tomcat avec Docker Compose et vérifie l'URL de l'application.
