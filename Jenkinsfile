@@ -34,10 +34,12 @@ pipeline {
         stage('Build and test') {
             steps {
                 script {
-                    if (isUnix()) {
-                        sh 'chmod +x mvnw && ./mvnw clean verify'
-                    } else {
-                        bat 'mvnw.cmd clean verify'
+                    retry(3) {
+                        if (isUnix()) {
+                            sh 'chmod +x mvnw && ./mvnw -Dmaven.wagon.http.retryHandler.count=5 clean verify'
+                        } else {
+                            bat 'mvnw.cmd -Dmaven.wagon.http.retryHandler.count=5 clean verify'
+                        }
                     }
                 }
             }
@@ -113,10 +115,13 @@ pipeline {
         stage('Deploy with Docker Compose') {
             steps {
                 script {
+                    def compose = isUnix()
+                        ? sh(returnStdout: true, script: 'if docker compose version >/dev/null 2>&1; then printf "docker compose"; elif command -v docker-compose >/dev/null 2>&1; then printf "docker-compose"; else exit 1; fi').trim()
+                        : bat(returnStdout: true, script: '@docker compose version >NUL 2>&1 && (echo docker compose) || (where docker-compose >NUL 2>&1 && (echo docker-compose))').trim()
                     if (isUnix()) {
-                        sh 'docker compose up -d --wait'
+                        sh "${compose} up -d --wait"
                     } else {
-                        bat 'docker compose up -d --wait'
+                        bat "${compose} up -d --wait"
                     }
                 }
             }
@@ -139,9 +144,9 @@ pipeline {
         always {
             script {
                 if (isUnix()) {
-                    sh 'docker compose logs --no-color > docker-compose.log || true'
+                    sh 'if docker compose version >/dev/null 2>&1; then docker compose logs --no-color > docker-compose.log; elif command -v docker-compose >/dev/null 2>&1; then docker-compose logs --no-color > docker-compose.log; else : > docker-compose.log; fi || true'
                 } else {
-                    bat 'docker compose logs --no-color > docker-compose.log'
+                    bat 'docker compose logs --no-color > docker-compose.log 2>NUL || docker-compose logs --no-color > docker-compose.log 2>NUL || type nul > docker-compose.log'
                 }
             }
             archiveArtifacts artifacts: 'docker-compose.log', allowEmptyArchive: true
@@ -149,9 +154,9 @@ pipeline {
         failure {
             script {
                 if (isUnix()) {
-                    sh 'docker compose ps || true'
+                    sh 'if docker compose version >/dev/null 2>&1; then docker compose ps; elif command -v docker-compose >/dev/null 2>&1; then docker-compose ps; fi || true'
                 } else {
-                    bat 'docker compose ps'
+                    bat 'docker compose ps || docker-compose ps || exit /b 0'
                 }
             }
         }
