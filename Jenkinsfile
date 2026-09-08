@@ -21,7 +21,6 @@ pipeline {
 
     environment {
         COMPOSE_PROJECT_NAME = 'empassign-ci'
-        SONAR_TOKEN = credentials('sonar-token')
     }
 
     stages {
@@ -56,15 +55,13 @@ pipeline {
                             sh '''
                                 ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
                                   -Dsonar.projectKey=empassign \
-                                                                    -Dsonar.host.url=http://sonarqube:9000 \
-                                  -Dsonar.token="$SONAR_TOKEN"
+                                                                    -Dsonar.host.url=http://sonarqube:9000
                             '''
                         } else {
                             bat '''
                                 mvnw.cmd org.sonarsource.scanner.maven:sonar-maven-plugin:sonar ^
                                   -Dsonar.projectKey=empassign ^
-                                                                    -Dsonar.host.url=http://sonarqube:9000 ^
-                                  -Dsonar.token="%SONAR_TOKEN%"
+                                                                    -Dsonar.host.url=http://sonarqube:9000
                             '''
                         }
                     }
