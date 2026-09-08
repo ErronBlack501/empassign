@@ -56,12 +56,14 @@ pipeline {
                             sh '''
                                 ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
                                   -Dsonar.projectKey=empassign \
+                                                                    -Dsonar.host.url=http://sonarqube:9000 \
                                   -Dsonar.token="$SONAR_TOKEN"
                             '''
                         } else {
                             bat '''
                                 mvnw.cmd org.sonarsource.scanner.maven:sonar-maven-plugin:sonar ^
                                   -Dsonar.projectKey=empassign ^
+                                                                    -Dsonar.host.url=http://sonarqube:9000 ^
                                   -Dsonar.token="%SONAR_TOKEN%"
                             '''
                         }
