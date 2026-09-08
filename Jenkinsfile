@@ -14,7 +14,7 @@ pipeline {
         )
         string(
             name: 'NEXUS_RELEASE_URL',
-            defaultValue: '',
+            defaultValue: 'http://nexus:8081/repository/maven-releases/',
             description: 'Full URL of the Nexus releases repository'
         )
     }
@@ -53,9 +53,17 @@ pipeline {
                 withSonarQubeEnv('SonarQube') {
                     script {
                         if (isUnix()) {
-                            sh './mvnw sonar:sonar -Dsonar.projectKey=empassign -Dsonar.token="$SONAR_TOKEN"'
+                            sh '''
+                                ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+                                  -Dsonar.projectKey=empassign \
+                                  -Dsonar.token="$SONAR_TOKEN"
+                            '''
                         } else {
-                            bat 'mvnw.cmd sonar:sonar -Dsonar.projectKey=empassign -Dsonar.token="%SONAR_TOKEN%"'
+                            bat '''
+                                mvnw.cmd org.sonarsource.scanner.maven:sonar-maven-plugin:sonar ^
+                                  -Dsonar.projectKey=empassign ^
+                                  -Dsonar.token="%SONAR_TOKEN%"
+                            '''
                         }
                     }
                 }
