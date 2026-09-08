@@ -51,22 +51,26 @@ pipeline {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     script {
-                        if (isUnix()) {
-                            sh '''
-                                test -n "$SONAR_AUTH_TOKEN" || { echo "ERROR: SonarQube installation token is missing"; exit 1; }
-                                ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:5.8.0.7211:sonar \
-                                  -Dsonar.projectKey=empassign \
-                                  -Dsonar.host.url="$SONAR_HOST_URL" \
-                                  -Dsonar.token="$SONAR_AUTH_TOKEN"
-                            '''
-                        } else {
-                            bat '''
-                                if "%SONAR_AUTH_TOKEN%"=="" exit /b 1
-                                mvnw.cmd org.sonarsource.scanner.maven:sonar-maven-plugin:5.8.0.7211:sonar ^
-                                  -Dsonar.projectKey=empassign ^
-                                  -Dsonar.host.url="%SONAR_HOST_URL%" ^
-                                  -Dsonar.token="%SONAR_AUTH_TOKEN%"
-                            '''
+                        retry(3) {
+                            if (isUnix()) {
+                                sh '''
+                                    test -n "$SONAR_AUTH_TOKEN" || { echo "ERROR: SonarQube installation token is missing"; exit 1; }
+                                    ./mvnw -Dmaven.wagon.http.retryHandler.count=5 \
+                                      org.sonarsource.scanner.maven:sonar-maven-plugin:5.8.0.7211:sonar \
+                                      -Dsonar.projectKey=empassign \
+                                      -Dsonar.host.url="$SONAR_HOST_URL" \
+                                      -Dsonar.token="$SONAR_AUTH_TOKEN"
+                                '''
+                            } else {
+                                bat '''
+                                    if "%SONAR_AUTH_TOKEN%"=="" exit /b 1
+                                    mvnw.cmd -Dmaven.wagon.http.retryHandler.count=5 ^
+                                      org.sonarsource.scanner.maven:sonar-maven-plugin:5.8.0.7211:sonar ^
+                                      -Dsonar.projectKey=empassign ^
+                                      -Dsonar.host.url="%SONAR_HOST_URL%" ^
+                                      -Dsonar.token="%SONAR_AUTH_TOKEN%"
+                                '''
+                            }
                         }
                     }
                 }
