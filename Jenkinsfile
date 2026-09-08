@@ -50,19 +50,36 @@ pipeline {
             }
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    script {
-                        if (isUnix()) {
-                            sh '''
-                                ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-                                  -Dsonar.projectKey=empassign \
-                                                                    -Dsonar.host.url=http://sonarqube:9000
-                            '''
-                        } else {
-                            bat '''
-                                mvnw.cmd org.sonarsource.scanner.maven:sonar-maven-plugin:sonar ^
-                                  -Dsonar.projectKey=empassign ^
-                                                                    -Dsonar.host.url=http://sonarqube:9000
-                            '''
+                    withCredentials([string(
+                        credentialsId: 'sonar-token',
+                        variable: 'SONAR_TOKEN'
+                    )]) {
+                        script {
+                            if (isUnix()) {
+                                sh '''
+                                    test -n "$SONAR_TOKEN" || { echo "ERROR: sonar-token is empty"; exit 1; }
+                                    curl --fail --silent --show-error \
+                                      -u "$SONAR_TOKEN:" \
+                                      http://sonarqube:9000/api/v2/analysis/version >/dev/null
+                                    echo "SonarQube credential and endpoint check: OK"
+                                    ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:5.8.0.7211:sonar \
+                                      -Dsonar.projectKey=empassign \
+                                      -Dsonar.host.url=http://sonarqube:9000 \
+                                      -Dsonar.token="$SONAR_TOKEN"
+                                '''
+                            } else {
+                                bat '''
+                                    if "%SONAR_TOKEN%"=="" exit /b 1
+                                    curl.exe --fail --silent --show-error \
+                                      -u "%SONAR_TOKEN%:" \
+                                      http://sonarqube:9000/api/v2/analysis/version >NUL
+                                    echo SonarQube credential and endpoint check: OK
+                                    mvnw.cmd org.sonarsource.scanner.maven:sonar-maven-plugin:5.8.0.7211:sonar ^
+                                      -Dsonar.projectKey=empassign ^
+                                      -Dsonar.host.url=http://sonarqube:9000 ^
+                                      -Dsonar.token="%SONAR_TOKEN%"
+                                '''
+                            }
                         }
                     }
                 }
@@ -109,9 +126,9 @@ pipeline {
                                 "-Dpackaging=war -DrepositoryId=nexus " +
                                 "-Durl=${params.NEXUS_RELEASE_URL} -DgeneratePom=true"
                             if (isUnix()) {
-                                sh "./mvnw ${deployCommand}"
+                                sh "test -n \"\$NEXUS_USERNAME\" && test -n \"\$NEXUS_PASSWORD\" || { echo 'ERROR: nexus-account is incomplete'; exit 1; }; ./mvnw ${deployCommand}"
                             } else {
-                                bat "mvnw.cmd ${deployCommand}"
+                                bat "if \"%NEXUS_USERNAME%\"==\"\" exit /b 1 & if \"%NEXUS_PASSWORD%\"==\"\" exit /b 1 & mvnw.cmd ${deployCommand}"
                             }
                         }
                     }
