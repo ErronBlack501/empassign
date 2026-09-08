@@ -1,25 +1,21 @@
 pipeline {
     agent any
 
-    tools {
-        jdk 'JDK21'
-    }
-
     parameters {
         booleanParam(
             name: 'RUN_SONAR',
             defaultValue: true,
-            description: 'Executer l analyse SonarQube'
+            description: 'Run SonarQube analysis'
         )
         booleanParam(
             name: 'DEPLOY_NEXUS',
             defaultValue: false,
-            description: 'Publier le WAR dans Nexus'
+            description: 'Publish the WAR file to Nexus'
         )
         string(
             name: 'NEXUS_RELEASE_URL',
             defaultValue: '',
-            description: 'URL complete du repository Nexus releases'
+            description: 'Full URL of the Nexus releases repository'
         )
     }
 
@@ -89,7 +85,7 @@ pipeline {
             steps {
                 script {
                     if (!params.NEXUS_RELEASE_URL?.trim()) {
-                        error 'NEXUS_RELEASE_URL est obligatoire quand DEPLOY_NEXUS est active.'
+                        error 'NEXUS_RELEASE_URL is required when DEPLOY_NEXUS is enabled.'
                     }
                 }
                 withCredentials([usernamePassword(
