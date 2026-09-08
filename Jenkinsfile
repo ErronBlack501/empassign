@@ -51,27 +51,26 @@ pipeline {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     script {
-                        // Pas de retry(3) le temps du diagnostic : on veut voir
-                        // l'erreur exacte de la PREMIÈRE tentative, sans qu'elle
-                        // soit noyée par 2 autres tentatives identiques derrière.
-                        if (isUnix()) {
-                            sh '''
-                                test -n "$SONAR_AUTH_TOKEN" || { echo "ERROR: SonarQube installation token is missing"; exit 1; }
-                                ./mvnw -e -X -Dmaven.wagon.http.retryHandler.count=5 \
-                                  org.sonarsource.scanner.maven:sonar-maven-plugin:5.8.0.7211:sonar \
-                                  -Dsonar.projectKey=empassign \
-                                  -Dsonar.host.url="$SONAR_HOST_URL" \
-                                  -Dsonar.token="$SONAR_AUTH_TOKEN"
-                            '''
-                        } else {
-                            bat '''
-                                if "%SONAR_AUTH_TOKEN%"=="" exit /b 1
-                                mvnw.cmd -e -X -Dmaven.wagon.http.retryHandler.count=5 ^
-                                  org.sonarsource.scanner.maven:sonar-maven-plugin:5.8.0.7211:sonar ^
-                                  -Dsonar.projectKey=empassign ^
-                                  -Dsonar.host.url="%SONAR_HOST_URL%" ^
-                                  -Dsonar.token="%SONAR_AUTH_TOKEN%"
-                            '''
+                        retry(3) {
+                            if (isUnix()) {
+                                sh '''
+                                    test -n "$SONAR_AUTH_TOKEN" || { echo "ERROR: SonarQube installation token is missing"; exit 1; }
+                                    ./mvnw -e -Dhttps.protocols=TLSv1.2 -Dmaven.wagon.http.retryHandler.count=5 \
+                                      org.sonarsource.scanner.maven:sonar-maven-plugin:5.8.0.7211:sonar \
+                                      -Dsonar.projectKey=empassign \
+                                      -Dsonar.host.url="$SONAR_HOST_URL" \
+                                      -Dsonar.token="$SONAR_AUTH_TOKEN"
+                                '''
+                            } else {
+                                bat '''
+                                    if "%SONAR_AUTH_TOKEN%"=="" exit /b 1
+                                    mvnw.cmd -e -Dhttps.protocols=TLSv1.2 -Dmaven.wagon.http.retryHandler.count=5 ^
+                                      org.sonarsource.scanner.maven:sonar-maven-plugin:5.8.0.7211:sonar ^
+                                      -Dsonar.projectKey=empassign ^
+                                      -Dsonar.host.url="%SONAR_HOST_URL%" ^
+                                      -Dsonar.token="%SONAR_AUTH_TOKEN%"
+                                '''
+                            }
                         }
                     }
                 }
@@ -118,9 +117,9 @@ pipeline {
                                 "-Dpackaging=war -DrepositoryId=nexus " +
                                 "-Durl=${params.NEXUS_RELEASE_URL} -DgeneratePom=true"
                             if (isUnix()) {
-                                sh "./mvnw ${deployCommand}"
+                                sh "test -n \"\$NEXUS_USERNAME\" && test -n \"\$NEXUS_PASSWORD\" || { echo 'ERROR: nexus-account is incomplete'; exit 1; }; ./mvnw ${deployCommand}"
                             } else {
-                                bat "mvnw.cmd ${deployCommand}"
+                                bat "if \"%NEXUS_USERNAME%\"==\"\" exit /b 1 & if \"%NEXUS_PASSWORD%\"==\"\" exit /b 1 & mvnw.cmd ${deployCommand}"
                             }
                         }
                     }
