@@ -149,9 +149,9 @@ pipeline {
             steps {
                 script {
                     if (isUnix()) {
-                        sh 'curl --fail --retry 20 --retry-delay 3 http://localhost:8080/empassign/'
+                        sh 'curl --fail --retry 20 --retry-delay 3 http://tomcat:8080/empassign/'
                     } else {
-                        bat 'curl.exe --fail --retry 20 --retry-delay 3 http://localhost:8080/empassign/'
+                        bat 'curl.exe --fail --retry 20 --retry-delay 3 http://tomcat:8080/empassign/'
                     }
                 }
             }
