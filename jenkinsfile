@@ -54,7 +54,7 @@ pipeline {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     script {
-                        retry(3) {
+                        retry(2) {
                             if (isUnix()) {
                                 sh '''
                                     test -n "$SONAR_AUTH_TOKEN" || { echo "ERROR: SonarQube installation token is missing"; exit 1; }
