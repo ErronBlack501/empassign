@@ -3,51 +3,58 @@ services:
   mysql:
     image: mysql:8.0
     restart: unless-stopped
+
     environment:
       MYSQL_DATABASE: empassign
       MYSQL_USER: empassign
       MYSQL_PASSWORD: empassign
       MYSQL_ROOT_PASSWORD: root
+
     ports:
       - "3307:3306"
+
     volumes:
       - mysql_data:/var/lib/mysql
+
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h localhost -uempassign -pempassign"]
       interval: 5s
       timeout: 5s
       retries: 20
+
     networks:
       - jenkins
+
 
   tomcat:
     image: tomcat:jre21-temurin-noble
     restart: unless-stopped
+
     depends_on:
       mysql:
         condition: service_healthy
+
     environment:
       DB_HOST: mysql
       DB_PORT: 3306
       DB_USER: empassign
       DB_PASSWORD: empassign
+
     ports:
       - "8080:8080"
+
     volumes:
       - ./target/empassign-1.0-SNAPSHOT.war:/usr/local/tomcat/webapps/empassign.war:ro
+
     networks:
       - jenkins
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/empassign/ || exit 1"]
-      interval: 5s
-      timeout: 5s
-      retries: 30
-      start_period: 20s
+
 
 volumes:
   mysql_data:
     external: true
     name: empassign_mysql_data
+
 
 networks:
   jenkins:
