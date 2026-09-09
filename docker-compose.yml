@@ -37,6 +37,12 @@ services:
       - ./target/empassign-1.0-SNAPSHOT.war:/usr/local/tomcat/webapps/empassign.war:ro
     networks:
       - jenkins
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/empassign/ || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
 
 volumes:
   mysql_data:
