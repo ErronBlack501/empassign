@@ -27,7 +27,11 @@ services:
 
 
   tomcat:
-    image: tomcat:jre21-temurin-noble
+    build:
+      context: .
+      dockerfile: Dockerfile.tomcat
+
+    image: empassign-tomcat:ci
     restart: unless-stopped
 
     depends_on:
@@ -43,20 +47,19 @@ services:
     ports:
       - "8080:8080"
 
-    volumes:
-      - ./target/empassign-1.0-SNAPSHOT.war:/usr/local/tomcat/webapps/empassign.war:ro
-
     networks:
       - jenkins
 
 
 volumes:
+
   mysql_data:
     external: true
     name: empassign_mysql_data
 
 
 networks:
+
   jenkins:
     external: true
     name: jenkins
